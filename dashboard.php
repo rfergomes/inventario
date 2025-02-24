@@ -113,7 +113,7 @@ $recent_transfers    = find_recent_transfer_added('5');
         <table class="table table-striped table-bordered table-condensed">
           <thead>
             <tr>
-              <th>Tombo</th>
+              <th>TAG</th>
               <th>Especificações</th>
             </tr>
           </thead>
@@ -142,7 +142,7 @@ $recent_transfers    = find_recent_transfer_added('5');
         <table class="table table-striped table-bordered table-condensed">
           <thead>
             <tr>
-              <th>Tombo</th>
+              <th>TAG</th>
               <th>Tipo de equipamento</th>
               <th>Usuário Responsável</th>
             </tr>

@@ -81,7 +81,7 @@ if(isset($_POST['add_manufacturer'])){
                       <span class="glyphicon glyphicon-edit"></span>
                     </a>
 
-                    <button title="Remover" type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#launchModal-<?= (int)$man['id'];?>">
+                    <button title="Remover" type="button" class="btn btn-xs btn-danger" data-toggle="modal" title="Excluir" data-target="#launchModal-<?= (int)$man['id'];?>">
                       <i class="glyphicon glyphicon-remove"></i>
                     </button>
                     <?php $action="deletar_fabricante.php"; $id=(int)$man['id']; include('layouts/modal-confirmacao.php'); ?>

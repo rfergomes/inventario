@@ -138,12 +138,18 @@ function find_all_user(){
 /*--------------------------------------------------------------*/
 function updateLastLogIn($user_id)
 {
-  global $db;
-  $date = make_date();
-  $sql = "UPDATE users SET last_login='{$date}' WHERE id ='{$user_id}' LIMIT 1";
-  $result = $db->query($sql);
-  return ($result && $db->affected_rows() === 1 ? true : false);
+    global $db;
+    $date = make_date();
+    
+    // Prepara a instrução SQL com parâmetros
+    $stmt = $db->prepare("UPDATE users SET last_login = :date WHERE id = :id");
+    
+    // Executa a instrução com os valores reais dos parâmetros
+    $result = $stmt->execute([':date' => $date, ':id' => $user_id]);
+
+    return ($result && $stmt->rowCount() === 1 ? true : false);
 }
+
 
 /*--------------------------------------------------------------*/
 /* Find group level
@@ -192,7 +198,7 @@ function find_all_equipment(){
   $sql  .=" m.name AS manufacturer, sit.name AS situation,";
   $sql  .=" e.created_at, u_c.name AS created_user, u_u.name AS updated_user, e.updated_at";
   $sql  .=" FROM equipments e";
-  $sql  .=" INNER JOIN types_equips t_e ON t_e.id = e.types_equip_id";
+  $sql  .=" INNER JOIN equipment_types t_e ON t_e.id = e.types_equip_id";
   $sql  .=" INNER JOIN manufacturers m ON m.id = e.manufacturer_id";
   $sql  .=" INNER JOIN situations sit ON sit.id = e.situation_id";
   $sql  .=" INNER JOIN users u_c ON u_c.id = e.created_by";
@@ -238,7 +244,7 @@ function find_equipment_by_tombo($equipment_tombo){
 function find_all_equipment_info_by_tombo($tombo){
   global $db;
   $sql  = "SELECT e.id,e.tombo,t_e.name AS type_equip FROM equipments e";
-  $sql .= " INNER JOIN types_equips t_e ON t_e.id = e.types_equip_id";
+  $sql .= " INNER JOIN equipment_types t_e ON t_e.id = e.types_equip_id";
   $sql .= " WHERE e.id NOT IN (SELECT equipment_id FROM transfers)";    
   $sql .= " AND e.tombo ='{$tombo}'";
   return find_by_sql($sql);
@@ -265,7 +271,7 @@ function find_all_transfer(){
   $sql .= " FROM transfers t";
   $sql .= " INNER JOIN equipments e ON e.id = t.equipment_id";
   $sql .= " INNER JOIN sectors s ON s.id = t.sector_id";
-  $sql .= " INNER JOIN types_equips t_e ON t_e.id = e.types_equip_id";
+  $sql .= " INNER JOIN equipment_types t_e ON t_e.id = e.types_equip_id";
   $sql  .=" INNER JOIN users u_c ON u_c.id = t.created_by";
   $sql  .=" LEFT JOIN users u_u ON u_u.id = t.updated_by";
   $sql .= " ORDER BY t.created_at DESC";   
@@ -280,7 +286,7 @@ function find_recent_transfer_added($limit){
   $sql  ="SELECT t.id,t.responsible_user,t.transfer_date,e.tombo,t_e.name AS type_equip";
   $sql .= " FROM transfers t";
   $sql .= " INNER JOIN equipments e ON e.id = t.equipment_id";
-  $sql  .=" INNER JOIN types_equips t_e ON t_e.id = e.types_equip_id";
+  $sql  .=" INNER JOIN equipment_types t_e ON t_e.id = e.types_equip_id";
   $sql .= " ORDER BY t.created_at DESC LIMIT ".$db->escape((int)$limit);
   return find_by_sql($sql);
 }
@@ -311,7 +317,7 @@ function issue_reports($tombo, $specifications, $responsible_user, $transfer, $t
   LEFT JOIN sectors s ON s.id = t.sector_id 
   INNER JOIN manufacturers m ON m.id = e.manufacturer_id 
   INNER JOIN situations sit ON sit.id = e.situation_id 
-  INNER JOIN types_equips t_e ON t_e.id = e.types_equip_id WHERE e.id ";
+  INNER JOIN equipment_types t_e ON t_e.id = e.types_equip_id WHERE e.id ";
 
   // Search for equipments in the category of "Somente Emprestados"
   if($transfer === "2"){
@@ -320,14 +326,14 @@ function issue_reports($tombo, $specifications, $responsible_user, $transfer, $t
     INNER JOIN sectors s ON s.id = t.sector_id 
     INNER JOIN manufacturers m ON m.id = e.manufacturer_id 
     INNER JOIN situations sit ON sit.id = e.situation_id 
-    INNER JOIN types_equips t_e ON t_e.id = e.types_equip_id WHERE e.id ";
+    INNER JOIN equipment_types t_e ON t_e.id = e.types_equip_id WHERE e.id ";
 
   // Search for equipments in the category of "Somente não Emprestados"
   } elseif($transfer === "3") {
     $sql  = "SELECT e.tombo,e.specifications,e.obs,e.warranty,m.name AS manufacturer,sit.name AS situation,t_e.name AS types_equip FROM equipments e 
     INNER JOIN manufacturers m ON m.id = e.manufacturer_id 
     INNER JOIN situations sit ON sit.id = e.situation_id 
-    INNER JOIN types_equips t_e ON t_e.id = e.types_equip_id 
+    INNER JOIN equipment_types t_e ON t_e.id = e.types_equip_id 
     WHERE e.id NOT IN (SELECT equipment_id FROM transfers) ";
   }
 
@@ -348,7 +354,7 @@ function issue_reports($tombo, $specifications, $responsible_user, $transfer, $t
 /*--------------------------------------------------------------*/
 function pieChartEquipmentPerTyperEquip(){
   global $db;
-  $sql = "SELECT COUNT(e.types_equip_id) AS count, t_e.name FROM equipments e INNER JOIN types_equips t_e ON t_e.id = e.types_equip_id GROUP BY e.types_equip_id";
+  $sql = "SELECT COUNT(e.types_equip_id) AS count, t_e.name FROM equipments e INNER JOIN equipment_types t_e ON t_e.id = e.types_equip_id GROUP BY e.types_equip_id";
   return find_by_sql($sql);
 }
 

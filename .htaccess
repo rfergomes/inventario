@@ -1,0 +1,7 @@
+RewriteEngine On
+RewriteBase /INVENTARIO/
+
+# Remove "public" das URLs
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/index.php?url=$1 [QSA,L]

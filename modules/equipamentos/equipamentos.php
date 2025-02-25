@@ -1,13 +1,21 @@
 <?php
 require_once('includes/load.php');
 
+// Capturar a URL amigável
+$url = isset($_GET['url']) ? $_GET['url'] : 'equipamento';
+$urlParts = explode('/', $url);
+
+// Se houver um ID na URL, é porque estamos vendo um equipamento específico
+$equipment_id = isset($urlParts[1]) ? (int) $urlParts[1] : 0;
+
 $page_title = 'Todos os Equipamentos';
-// Checkin What level user has permission to view this page
 page_require_level(1);
 
 $equipments = find_all_equipment();
 ?>
+
 <?php include_once('layouts/header.php'); ?>
+
 <div class="row">
   <div class="col-md-12">
     <?= display_msg($msg); ?>
@@ -20,7 +28,7 @@ $equipments = find_all_equipment();
           <span>Todos os Equipamentos</span>
         </strong>
         <div class="pull-right">
-          <a href="adicionar_equipamento.php" class="btn btn-primary">Adicionar Novo</a>
+          <a href="/equipamento/adicionar" class="btn btn-primary">Adicionar Novo</a>
         </div>
       </div>
       <div class="panel-body">
@@ -43,9 +51,9 @@ $equipments = find_all_equipment();
             </tr>
           </thead>
           <tbody>
-            <?php foreach ($equipments as $equipment):?>
+            <?php foreach ($equipments as $equipment): ?>
               <tr>
-                <td class="text-center"><?= count_id();?></td>
+                <td class="text-center"><?= count_id(); ?></td>
                 <td class="text-center"><?= remove_junk($equipment['tombo']); ?></td>
                 <td><?= remove_junk($equipment['specifications']); ?></td>
                 <td class="text-center"><?= remove_junk($equipment['type_equip']); ?></td>                
@@ -54,24 +62,44 @@ $equipments = find_all_equipment();
                 <td><?= remove_junk($equipment['obs']); ?></td>
                 <td class="text-center">
                   <?php
-                    if(!is_null($equipment['warranty'])) echo strftime('%d/%m/%Y', strtotime($equipment['warranty']));
-                    else echo "Sem garantia";
+                    if (!is_null($equipment['warranty'])) {
+                      $date = DateTime::createFromFormat('Y-m-d', $equipment['warranty']);
+                      echo $date ? $date->format('d/m/Y') : "Data inválida";
+                    } else {
+                      echo "Sem garantia";
+                    }
                   ?>                    
                 </td>
                 <td><?= remove_junk($equipment['created_user']); ?></td>       
-                <td class="text-center"><?= strftime('%d/%m/%Y %H:%M', strtotime($equipment['created_at'])); ?></td>                
+                <td class="text-center">
+                  <?php 
+                    $date = DateTime::createFromFormat('Y-m-d H:i:s', $equipment['created_at']);
+                    echo $date ? $date->format('d/m/Y H:i') : "Data inválida";
+                  ?>
+                </td>                
                 <td><?= remove_junk($equipment['updated_user']); ?></td>
-                <td class="text-center"><?php if(!empty($equipment['updated_at'])) echo strftime('%d/%m/%Y %H:%M', strtotime($equipment['updated_at'])); ?></td>
+                <td class="text-center">
+                  <?php 
+                    if (!empty($equipment['updated_at'])) {
+                      $date = DateTime::createFromFormat('Y-m-d H:i:s', $equipment['updated_at']);
+                      echo $date ? $date->format('d/m/Y H:i') : "Data inválida";
+                    }
+                  ?>
+                </td>
                 <td class="text-center">
                   <div class="btn-group">
-                    <a href="editar_equipamento.php?id=<?= (int)$equipment['id'];?>" class="btn btn-xs btn-warning"  title="Editar" data-toggle="tooltip">
+                    <a href="/equipamento/editar/<?= (int)$equipment['id']; ?>" class="btn btn-xs btn-warning" title="Editar" data-toggle="tooltip">
                       <span class="glyphicon glyphicon-edit"></span>
                     </a>
 
-                    <button title="Remover" type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#launchModal-<?= (int)$equipment['id'];?>">
+                    <button title="Remover" type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#launchModal-<?= (int)$equipment['id']; ?>">
                       <i class="glyphicon glyphicon-remove"></i>
                     </button>
-                    <?php $action="deletar_equipamento.php"; $id=(int)$equipment['id']; include('layouts/modal-confirmacao.php'); ?>
+                    <?php 
+                      $action = "/equipamento/deletar/" . (int)$equipment['id'];
+                      $id = (int)$equipment['id'];
+                      include('layouts/modal-confirmacao.php'); 
+                    ?>
                   </div>
                 </td>
               </tr>

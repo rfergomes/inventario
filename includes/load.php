@@ -2,41 +2,42 @@
 // -----------------------------------------------------------------------
 // START SESSION
 // -----------------------------------------------------------------------
-if (!isset($_SESSION)) session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ob_start();
 
 // -----------------------------------------------------------------------
 // ENABLE CODE DEBUG WITH "TRUE" OR "FALSE"
 // -----------------------------------------------------------------------
-define('APP_DEBUG', false);
-ini_set('display_errors', APP_DEBUG);
-error_reporting(E_ALL | E_NOTICE | E_WARNING);
+define('APP_DEBUG', true);  // Alterado de false para true
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 
 // -----------------------------------------------------------------------
 // DEFINE DEFAULT TIMEZONE
 // -----------------------------------------------------------------------
-setlocale(LC_TIME, 'pt_BR', 'pt_BR.iso-8859-1', 'pt_BR.utf-8', 'portuguese');
+setlocale(LC_TIME, 'pt_BR.UTF-8', 'Portuguese_Brazil');
 date_default_timezone_set('America/Fortaleza');
 
 // -----------------------------------------------------------------------
-// DEFINE SEPERATOR ALIASES
+// DEFINE SEPARATOR ALIASES
 // -----------------------------------------------------------------------
-define("URL_SEPARATOR", '/');
-
 define("DS", DIRECTORY_SEPARATOR);
 
 // -----------------------------------------------------------------------
 // DEFINE ROOT PATHS
 // -----------------------------------------------------------------------
-defined('SITE_ROOT')? null: define('SITE_ROOT', realpath(dirname(__FILE__)));
-define("LIB_PATH_INC", SITE_ROOT.DS);
+define('SITE_ROOT', realpath(__DIR__));
+define("LIB_PATH_INC", SITE_ROOT . DS);
 
-
-require_once(LIB_PATH_INC.'config.php');
-require_once(LIB_PATH_INC.'functions.php');
-require_once(LIB_PATH_INC.'session.php');
-require_once(LIB_PATH_INC.'upload.php');
-require_once(LIB_PATH_INC.'database.php');
-require_once(LIB_PATH_INC.'sql.php');
-
+// -----------------------------------------------------------------------
+// LOAD REQUIRED FILES
+// -----------------------------------------------------------------------
+$includes = ['config', 'functions', 'session', 'upload', 'database', 'sql'];
+foreach ($includes as $file) {
+    require_once LIB_PATH_INC . $file . '.php';
+}
 ?>

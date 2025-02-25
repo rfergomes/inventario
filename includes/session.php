@@ -15,6 +15,7 @@ class Session {
   }
   public function login($user_id){
     $_SESSION['user_id'] = $user_id;
+    $_SESSION['token'] = bin2hex(random_bytes(32));
   }
   private function userLoginSetup()
   {
@@ -28,6 +29,7 @@ class Session {
   }
   public function logout(){
     unset($_SESSION['user_id']);
+    unset($_SESSION['token']);
   }
 
   public function msg($type ='', $msg =''){

@@ -43,7 +43,7 @@ function validate_fields($var){
 /* Function for Display Session Message
    Ex echo displayt_msg($message);
 /*--------------------------------------------------------------*/
-function display_msg($msg =''){
+function display_msg($msg =[]){
    $output = array();
    if(!empty($msg)) {
       foreach ($msg as $key => $value) {
@@ -82,9 +82,10 @@ function read_date($str){
 /*--------------------------------------------------------------*/
 /* Function for  Readable Make date time
 /*--------------------------------------------------------------*/
-function make_date(){
-  return strftime("%Y-%m-%d %H:%M:%S", time());
+function make_date() {
+  return (new DateTime())->format('Y-m-d H:i:s');
 }
+
 /*--------------------------------------------------------------*/
 /* Function for  Readable date time
 /*--------------------------------------------------------------*/

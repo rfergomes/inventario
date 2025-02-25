@@ -39,29 +39,38 @@ $all_users = find_all_user();
             </tr>
           </thead>
           <tbody>
-            <?php foreach($all_users as $a_user): ?>
+            <?php foreach ($all_users as $a_user): ?>
               <tr>
-                <td class="text-center"><?= count_id();?></td>
-                <td><?= remove_junk(ucwords($a_user['name']))?></td>
-                <td><?= remove_junk($a_user['username'])?></td>
-                <td class="text-center"><?= remove_junk(ucwords($a_user['group_name']))?></td>
+                <td class="text-center"><?= count_id(); ?></td>
+                <td><?= remove_junk(ucwords($a_user['name'])) ?></td>
+                <td><?= remove_junk($a_user['username']) ?></td>
+                <td class="text-center"><?= remove_junk(ucwords($a_user['group_name'])) ?></td>
                 <td class="text-center">
-                  <?php if($a_user['status'] === '1'): ?>
-                  <span class="label label-success"><?= "Ativo"; ?></span>
+                  <?php if ($a_user['status'] === '1'): ?>
+                    <span class="label label-success"><?= "Ativo"; ?></span>
                   <?php else: ?>
-                  <span class="label label-danger"><?= "Inativo"; ?></span>
-                  <?php endif;?>
+                    <span class="label label-danger"><?= "Inativo"; ?></span>
+                  <?php endif; ?>
                 </td>
-                <td><?php if(empty($a_user['last_login'])): echo "Nunca fez login"; else: echo strftime('%H:%M,  %d de %B de %Y', strtotime($a_user['last_login'])); endif; ?></td>
+                <td>
+                  <?php
+                  if (empty($a_user['last_login'])):
+                    echo "Nunca fez login";
+                  else:
+                    $lastLogin = new DateTime($a_user['last_login']);
+                    echo $lastLogin->format('d/m/Y \- H:i:s');
+                  endif;
+                  ?>
+                </td>
                 <td class="text-center">
                   <div class="btn-group">
-                    <a href="editar_usuario.php?id=<?= (int)$a_user['id'];?>" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Editar">
+                    <a href="editar_usuario.php?id=<?= (int)$a_user['id']; ?>" class="btn btn-xs btn-warning" data-toggle="tooltip" title="Editar">
                       <i class="glyphicon glyphicon-edit"></i>
                     </a>
                   </div>
                 </td>
               </tr>
-            <?php endforeach;?>
+            <?php endforeach; ?>
           </tbody>
         </table>
       </div>

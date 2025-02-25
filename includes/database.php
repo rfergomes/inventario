@@ -1,115 +1,90 @@
 <?php
-require_once(LIB_PATH_INC."config.php");
+// Inclui o arquivo config.php e obtém o array de configuração
+$config = include(LIB_PATH_INC . "config.php");
 
-class MySqli_DB {
+// Define constantes com base nas credenciais do banco de dados
+define('DB_HOST', $config['db_host']);
+define('DB_USER', $config['db_user']);
+define('DB_PASS', $config['db_pass']);
+define('DB_NAME', $config['db_name']);
 
-    private $con;
-    public $query_id;
-
-    function __construct() {
-      $this->db_connect();      
-    }
-
-/*--------------------------------------------------------------*/
-/* Function for Open database connection
-/*--------------------------------------------------------------*/
-public function db_connect()
+class PDO_DB extends PDO
 {
-  $this->con = mysqli_connect(DB_HOST,DB_USER,DB_PASS);
-  $this->con->set_charset("utf8");
-  
-  if(!$this->con)
-         {
-           //die(" Falha ao conectar com o banco de dados:". mysqli_connect_error());
-           die(" Falha ao conectar com o banco de dados.");
-         } else {
-           $select_db = $this->con->select_db(DB_NAME);
-             if(!$select_db)
-             {
-               // die("Falha ao selecionar o banco de dados.". mysqli_connect_error());
-               die("Falha ao selecionar o banco de dados.");
-             }
-         }
-}
-/*--------------------------------------------------------------*/
-/* Function for Close database connection
-/*--------------------------------------------------------------*/
 
-public function db_disconnect()
-{
-  if(isset($this->con))
+  public $query_id;
+
+  public function __construct()
   {
-    mysqli_close($this->con);
-    unset($this->con);
+    try {
+      parent::__construct("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
+      $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+      $this->exec("set names utf8");
+    } catch (PDOException $e) {
+      die("Falha ao conectar com o banco de dados: " . $e->getMessage());
+    }
+  }
+
+  /*--------------------------------------------------------------*/
+  /* Function for Close database connection
+  /*--------------------------------------------------------------*/
+  public function db_disconnect()
+  {
+    $this->query_id = null;
+  }
+
+  /*--------------------------------------------------------------*/
+  /* Function for Query Helper
+  /*--------------------------------------------------------------*/
+  public function fetch_array($statement)
+  {
+    return $statement->fetch(PDO::FETCH_BOTH);
+  }
+
+  public function fetch_object($statement)
+  {
+    return $statement->fetch(PDO::FETCH_OBJ);
+  }
+
+  public function fetch_assoc($statement)
+  {
+    return $statement->fetch(PDO::FETCH_ASSOC);
+  }
+
+  public function num_rows($statement)
+  {
+    return $statement->rowCount();
+  }
+
+  public function insert_id()
+  {
+    return $this->lastInsertId();
+  }
+
+  public function affected_rows()
+  {
+    return $this->query_id->rowCount();
+  }
+
+  /*--------------------------------------------------------------*/
+  /* Function for Remove escapes special
+  /* characters in a string for use in an SQL statement
+  /*--------------------------------------------------------------*/
+  public function escape($str)
+  {
+    return $this->quote($str);
+  }
+
+  /*--------------------------------------------------------------*/
+  /* Function for while loop
+  /*--------------------------------------------------------------*/
+  public function while_loop($loop)
+  {
+    $results = array();
+    while ($result = $this->fetch_array($loop)) {
+      $results[] = $result;
+    }
+    return $results;
   }
 }
-/*--------------------------------------------------------------*/
-/* Function for mysqli query
-/*--------------------------------------------------------------*/
-public function query($sql)
-   {
 
-      if (trim($sql != "")) {
-          $this->query_id = $this->con->query($sql);
-      }
-      // only for Develope mode
-      if (!$this->query_id)        
-      //  die("Error on this Query :<pre> " . $sql ."</pre>");
-      // For production mode
-        die("Desculpe, devido a um erro não foi possível completar esta operação.");
-
-       return $this->query_id;
-
-   }
-
-/*--------------------------------------------------------------*/
-/* Function for Query Helper
-/*--------------------------------------------------------------*/
-public function fetch_array($statement)
-{
-  return mysqli_fetch_array($statement);
-}
-public function fetch_object($statement)
-{
-  return mysqli_fetch_object($statement);
-}
-public function fetch_assoc($statement)
-{
-  return mysqli_fetch_assoc($statement);
-}
-public function num_rows($statement)
-{
-  return mysqli_num_rows($statement);
-}
-public function insert_id()
-{
-  return mysqli_insert_id($this->con);
-}
-public function affected_rows()
-{
-  return mysqli_affected_rows($this->con);
-}
-/*--------------------------------------------------------------*/
- /* Function for Remove escapes special
- /* characters in a string for use in an SQL statement
- /*--------------------------------------------------------------*/
- public function escape($str){
-   return $this->con->real_escape_string($str);
- }
-/*--------------------------------------------------------------*/
-/* Function for while loop
-/*--------------------------------------------------------------*/
-public function while_loop($loop){
- global $db;
-   $results = array();
-   while ($result = $this->fetch_array($loop)) {
-      $results[] = $result;
-   }
- return $results;
-}
-
-}
-
-$db = new MySqli_DB();
-
-?>
+$db = new PDO_DB();
